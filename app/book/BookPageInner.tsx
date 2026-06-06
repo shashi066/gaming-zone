@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import {
   TIME_SLOTS, DURATION_OPTIONS, formatTime, formatDate,
-  formatCurrency, getTodayString, isSlotAvailable, addHours,
+  formatCurrency, getTodayString, isSlotAvailable, addHours, getTimeSlotsForDate,
 } from '@/lib/utils';
 
 type Station = {
@@ -448,10 +448,10 @@ export default function BookPageInner() {
                   Available Start Times
                 </div>
                 <div className="time-slots-grid">
-                  {TIME_SLOTS.map((time) => {
+                  {getTimeSlotsForDate(selectedDate).map((time) => {
                     const slotHour = parseInt(time.split(':')[0]);
                     const endH = slotHour + selectedDuration;
-                    if (endH > 23) return null;
+                    if (endH > 24) return null;
 
                     // Block past slots on today's date
                     const now = new Date();

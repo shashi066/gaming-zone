@@ -105,7 +105,16 @@ export default function LoginPage() {
               required
               autoComplete="current-password"
             />
+            <p style={{
+              fontSize: '0.78rem',
+              color: 'var(--color-text-muted)',
+              marginTop: 6,
+              textAlign: 'right',
+            }}>
+              Forgot password? Visit the counter!
+            </p>
           </div>
+
 
           <button
             type="submit"

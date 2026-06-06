@@ -13,6 +13,8 @@ import {
   ChevronRight,
   Monitor,
   Wifi,
+  Phone,
+  MapPin,
 } from 'lucide-react';
 
 async function getStations() {
@@ -345,20 +347,64 @@ export default async function HomePage() {
             </div>
             <div>
               <div style={{ fontWeight: 700, marginBottom: 'var(--space-md)', fontSize: '0.9rem' }}>Quick Links</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {[['/', 'Home'], ['/book', 'Book a Slot'], ['/my-bookings', 'My Bookings']].map(([href, label]) => (
-                  <Link key={href} href={href} style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
-                    {label}
-                  </Link>
-                ))}
-              </div>
+<div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+  {[
+    ['/', 'Home'],
+    ['/book', 'Book a Slot'],
+    ['/my-bookings', 'My Bookings'],
+    ['https://www.instagram.com/theemiguild', 'Instagram'],
+  ].map(([href, label]) =>
+    href.startsWith('http') ? (
+      // External link: open in new tab
+      <a
+        key={href}
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)' }}
+      >
+        {label}
+      </a>
+    ) : (
+      // Internal link: use Next.js Link
+      <Link
+        key={href}
+        href={href}
+        style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)' }}
+      >
+        {label}
+      </Link>
+    )
+  )}
+</div>
             </div>  
             <div>
               <div style={{ fontWeight: 700, marginBottom: 'var(--space-md)', fontSize: '0.9rem' }}>Hours</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
                 <span>Mon–Fri: 12 PM – 12 AM</span>
                 <span>Sat–Sun: 10 AM – 12 AM</span>
-                <span>Holidays: 10 AM – 12 AM</span>
+              </div>
+            </div>
+            <div>
+              <div style={{ fontWeight: 700, marginBottom: 'var(--space-md)', fontSize: '0.9rem' }}>Contact</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <a
+                  href="tel:+919989562474"
+                  className="footer-map-link"
+                  style={{ fontWeight: 600 }}
+                >
+                  <Phone size={14} style={{ marginTop: 2, flexShrink: 0 }} />
+                  +91 9989562474
+                </a>
+                <a
+                  href="https://maps.app.goo.gl/BguSp1D4LwCuX2PD9"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="footer-map-link"
+                >
+                  <MapPin size={14} style={{ marginTop: 2, flexShrink: 0 }} />
+                  Find us on Google Maps
+                </a>
               </div>
             </div>
           </div>

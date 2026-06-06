@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import { User, Mail, Phone, Calendar, BookOpen, Shield } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
+import { ChangePasswordForm } from '@/components/profile/ChangePasswordForm';
 
 export default async function ProfilePage() {
   const session = await auth();
@@ -77,6 +78,11 @@ export default async function ProfilePage() {
               <div className="booking-detail-value" style={{ fontSize: '0.875rem' }}>{user.role}</div>
             </div>
           </div>
+
+          {/* Change password button */}
+          <div style={{ marginTop: 'var(--space-xl)', paddingTop: 'var(--space-lg)', borderTop: '1px solid var(--color-border)' }}>
+            <ChangePasswordForm />
+          </div>
         </div>
 
         {/* Stats */}
@@ -87,10 +93,10 @@ export default async function ProfilePage() {
 
         <div className="stats-grid">
           {[
-            { label: 'Total Bookings', value: totalBookings, color: '#6c63ff', bg: 'rgba(108,99,255,0.1)' },
-            { label: 'Confirmed', value: confirmed, color: '#10b981', bg: 'rgba(16,185,129,0.1)' },
-            { label: 'Completed Sessions', value: completed, color: '#818cf8', bg: 'rgba(99,102,241,0.1)' },
-            { label: 'Total Spent', value: formatCurrency(totalSpent), color: '#ffaa00', bg: 'rgba(255,170,0,0.1)' },
+            { label: 'Total Bookings',    value: totalBookings,           color: '#6c63ff', bg: 'rgba(108,99,255,0.1)' },
+            { label: 'Confirmed',         value: confirmed,               color: '#10b981', bg: 'rgba(16,185,129,0.1)' },
+            { label: 'Completed Sessions',value: completed,               color: '#818cf8', bg: 'rgba(99,102,241,0.1)' },
+            { label: 'Total Spent',       value: formatCurrency(totalSpent), color: '#ffaa00', bg: 'rgba(255,170,0,0.1)' },
           ].map((stat, i) => (
             <div key={i} className="stat-card">
               <div className="stat-icon" style={{ background: stat.bg, color: stat.color }}>

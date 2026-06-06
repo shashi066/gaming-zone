@@ -5,7 +5,7 @@ import {
   UserPlus, Plus, Trash2, AlertCircle, RefreshCw,
   Calendar, Clock, Monitor, X, CheckCircle, Phone, User, Search,
 } from 'lucide-react';
-import { formatDate, formatTime, formatCurrency, getTodayString, isSlotAvailable, TIME_SLOTS as BASE_TIME_SLOTS } from '@/lib/utils';
+import { formatDate, formatTime, formatCurrency, getTodayString, isSlotAvailable, getTimeSlotsForDate } from '@/lib/utils';
 
 type Station = { id: string; name: string; hourlyRate: number };
 type BookedSlot = { startTime: string; endTime: string; status: string };
@@ -96,8 +96,8 @@ export default function WalkinBookingPage() {
   const estimatedTotal = selectedStation ? selectedStation.hourlyRate * form.duration + controllerCharge : 0;
 
   // Filter available time slots: within opening hours, not past, not conflicting
-  const SHOP_CLOSE_HOUR = 23; // last slot start must allow duration to fit before close
-  const availableSlots = BASE_TIME_SLOTS.filter((time) => {
+  const SHOP_CLOSE_HOUR = 24; // shop closes at 12AM (midnight)
+  const availableSlots = getTimeSlotsForDate(form.date).filter((time) => {
     const [h] = time.split(':').map(Number);
     // Must fit within closing time
     if (h + form.duration > SHOP_CLOSE_HOUR) return false;

@@ -6,11 +6,11 @@ import { auth } from '@/auth';
 
 export const metadata: Metadata = {
   title: {
-    default: 'EmiGuild Cafe — PS5 & Racing Simulator Booking',
-    template: '%s | EmiGuild Cafe',
+    default: 'EmiGuild Gaming Cafe — PS5 & Racing Simulator Booking',
+    template: '%s | EmiGuild Gaming Cafe',
   },
   description: 
-    'EmiGuild Cafe in [Your City] offers PS5, racing simulators, and premium gaming stations. Reserve your slot online for an immersive gaming experience. Walk in ready to play!',
+    'EmiGuild Gaming Cafe in [Your City] offers PS5, racing simulators, and premium gaming stations. Reserve your slot online for an immersive gaming experience. Walk in ready to play!',
   keywords: [
     'EmiGuild Cafe',
     'EmiGuild Gaming',

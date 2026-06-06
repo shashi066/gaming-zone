@@ -4,6 +4,23 @@ export const TIME_SLOTS = [
   '21:00', '22:00',
 ];
 
+// Weekdays (Mon–Fri): 12:00–23:00, Weekends (Sat–Sun): 10:00–23:00
+const WEEKDAY_SLOTS = [
+  '12:00', '13:00', '14:00', '15:00', '16:00', '17:00',
+  '18:00', '19:00', '20:00', '21:00', '22:00', '23:00',
+];
+const WEEKEND_SLOTS = [
+  '10:00', '11:00', '12:00', '13:00', '14:00', '15:00',
+  '16:00', '17:00', '18:00', '19:00', '20:00', '21:00',
+  '22:00', '23:00',
+];
+
+export function getTimeSlotsForDate(dateStr: string): string[] {
+  const date = new Date(dateStr + 'T00:00:00');
+  const day = date.getDay(); // 0 = Sun, 6 = Sat
+  return day === 0 || day === 6 ? WEEKEND_SLOTS : WEEKDAY_SLOTS;
+}
+
 export const DURATION_OPTIONS = [
   { value: 1, label: '1 Hour' },
   { value: 2, label: '2 Hours' },
@@ -21,12 +38,14 @@ export const BOOKING_STATUSES = {
 export function addHours(time: string, hours: number): string {
   const [h, m] = time.split(':').map(Number);
   const newH = h + hours;
-  if (newH >= 24) return '00:00'; // overflow guard
+  if (newH > 24) return '00:00'; // hard overflow
+  if (newH === 24) return '24:00'; // midnight closing
   return `${String(newH).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
 }
 
 export function formatTime(time: string): string {
   const [h, m] = time.split(':').map(Number);
+  if (h === 24) return '12:00 AM'; // midnight
   const period = h >= 12 ? 'PM' : 'AM';
   const hour = h % 12 || 12;
   return `${hour}:${String(m).padStart(2, '0')} ${period}`;

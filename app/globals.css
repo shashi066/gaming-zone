@@ -1544,6 +1544,20 @@ input.form-input[type="time"]:focus {
   color: var(--color-text-muted);
 }
 
+.footer-map-link {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  line-height: 1.5;
+  transition: color 0.2s ease;
+}
+.footer-map-link:hover {
+  color: var(--color-accent-primary);
+}
+
 /* ============================================================
    ANIMATIONS
    ============================================================ */

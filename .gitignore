@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Next.js
+.next/
+out/
+build/
+
+# Environment files — NEVER commit these
+.env
+.env.local
+.env.*.local
+
+# SQLite database — local only
+*.db
+*.db-journal
+prisma/dev.db
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Prisma migrations lock (keep migrations folder, ignore SQLite artefacts)
+prisma/*.db

@@ -4,15 +4,16 @@ export const TIME_SLOTS = [
   '21:00', '22:00',
 ];
 
-// Weekdays (Mon–Fri): 12:00–23:00, Weekends (Sat–Sun): 10:00–23:00
+export const CLOSING_HOUR = 23; // Shop closes 11 PM; last slot must end by this hour
+
+// Weekdays (Mon–Fri): 12:00–22:00, Weekends (Sat–Sun): 10:00–22:00
 const WEEKDAY_SLOTS = [
   '12:00', '13:00', '14:00', '15:00', '16:00', '17:00',
-  '18:00', '19:00', '20:00', '21:00', '22:00', '23:00',
+  '18:00', '19:00', '20:00', '21:00', '22:00',
 ];
 const WEEKEND_SLOTS = [
   '10:00', '11:00', '12:00', '13:00', '14:00', '15:00',
-  '16:00', '17:00', '18:00', '19:00', '20:00', '21:00',
-  '22:00', '23:00',
+  '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00',
 ];
 
 export function getTimeSlotsForDate(dateStr: string): string[] {

@@ -916,7 +916,6 @@ input.form-input[type="time"]:focus {
   padding: 10px;
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border);
-  background: var(--color-bg-card);
   cursor: pointer;
   text-align: center;
   font-size: 0.85rem;

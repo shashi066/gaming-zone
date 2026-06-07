@@ -9,7 +9,7 @@ import {
   ChevronLeft, AlertCircle, Zap, Snowflake, Gamepad2, Plus, Minus,
 } from 'lucide-react';
 import {
-  TIME_SLOTS, DURATION_OPTIONS, formatTime, formatDate,
+  TIME_SLOTS, DURATION_OPTIONS, CLOSING_HOUR, formatTime, formatDate,
   formatCurrency, getTodayString, isSlotAvailable, addHours, getTimeSlotsForDate,
 } from '@/lib/utils';
 
@@ -451,15 +451,15 @@ export default function BookPageInner() {
                   {getTimeSlotsForDate(selectedDate).map((time) => {
                     const slotHour = parseInt(time.split(':')[0]);
                     const endH = slotHour + selectedDuration;
-                    if (endH > 24) return null;
+                    // Hide slots where booking would run past closing time
+                    if (endH > CLOSING_HOUR) return null;
 
-                    // Block past slots on today's date
+                    // Block past slots — allow up to 15 min after slot start
                     const now = new Date();
                     const isToday = selectedDate === getTodayString();
-                    const isPast = isToday && (
-                      slotHour < now.getHours() ||
-                      (slotHour === now.getHours() && now.getMinutes() > 0)
-                    );
+                    const slotStartMins = slotHour * 60;
+                    const nowMins = now.getHours() * 60 + now.getMinutes();
+                    const isPast = isToday && nowMins > slotStartMins + 15;
 
                     // Detect frozen (BLOCKED) vs normal booked overlap
                     const slotEndH = slotHour + selectedDuration;

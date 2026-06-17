@@ -177,15 +177,18 @@ export default function WalkinBookingPage() {
   };
 
   // Filter available time slots: within opening hours, not past, not conflicting
-  const SHOP_CLOSE_HOUR = 24; // shop closes at 12AM (midnight)
+  const SHOP_CLOSE_MINS = 23 * 60; // 11 PM in minutes
   const availableSlots = getTimeSlotsForDate(form.date).filter((time) => {
-    const [h] = time.split(':').map(Number);
+    const [h, m] = time.split(':').map(Number);
+    const slotStartMins = h * 60 + m;
+    const slotEndMins = slotStartMins + Math.round(form.duration * 60);
     // Must fit within closing time
-    if (h + form.duration > SHOP_CLOSE_HOUR) return false;
+    if (slotEndMins > SHOP_CLOSE_MINS) return false;
     // Block past times if today
     if (form.date === getTodayString()) {
       const now = new Date();
-      if (h <= now.getHours()) return false;
+      const nowMins = now.getHours() * 60 + now.getMinutes();
+      if (nowMins >= slotStartMins) return false;
     }
     return isSlotAvailable(time, form.duration, bookedSlots);
   });

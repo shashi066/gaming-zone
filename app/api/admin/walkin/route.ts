@@ -15,7 +15,7 @@ const walkinSchema = z.object({
   notes:            z.string().optional(),
   status:           z.enum(['PENDING', 'CONFIRMED']).optional(),
   usePass:          z.boolean().optional(),
-  linkedUserId:     z.string().optional(), // registered user's id (for pass lookup)
+  linkedUserId:     z.string().nullable().optional(), // registered user's id (for pass lookup)
 });
 
 // GET — list all offline (walk-in) bookings
@@ -78,13 +78,14 @@ export async function POST(req: NextRequest) {
       where: { stationId, date, status: { not: 'CANCELLED' } },
     });
 
-    const [startH] = startTime.split(':').map(Number);
-    const [endH]   = endTime.split(':').map(Number);
+    const toMins = (t: string) => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+    const startMins = toMins(startTime);
+    const endMins   = toMins(endTime);
 
     for (const b of conflicts) {
-      const [bStart] = b.startTime.split(':').map(Number);
-      const [bEnd]   = b.endTime.split(':').map(Number);
-      if (startH < bEnd && endH > bStart) {
+      const bStartMins = toMins(b.startTime);
+      const bEndMins   = toMins(b.endTime);
+      if (startMins < bEndMins && endMins > bStartMins) {
         const who = b.bookingType === 'OFFLINE' ? 'another walk-in customer' : 'an online customer';
         return NextResponse.json(
           { error: `This slot is already booked by ${who}. Please choose a different time.` },

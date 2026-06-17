@@ -1,19 +1,21 @@
 export const TIME_SLOTS = [
-  '09:00', '10:00', '11:00', '12:00', '13:00', '14:00',
-  '15:00', '16:00', '17:00', '18:00', '19:00', '20:00',
-  '21:00', '22:00',
+  '16:00', '16:30', '17:00', '17:30', '18:00', '18:30',
+  '19:00', '19:30', '20:00', '20:30', '21:00', '21:30', '22:00',
 ];
 
-export const CLOSING_HOUR = 23; // Shop closes 11 PM; last slot must end by this hour
+export const CLOSING_HOUR = 23; // Shop closes 11 PM
 
-// Weekdays (Mon–Fri): 12:00–22:00, Weekends (Sat–Sun): 10:00–22:00
+// Weekdays (Mon–Fri): 4:00 PM – 11:00 PM (last slot 10:00 PM for 1hr min)
 const WEEKDAY_SLOTS = [
-  '12:00', '13:00', '14:00', '15:00', '16:00', '17:00',
-  '18:00', '19:00', '20:00', '21:00', '22:00',
+  '16:00', '16:30', '17:00', '17:30', '18:00', '18:30',
+  '19:00', '19:30', '20:00', '20:30', '21:00', '21:30', '22:00',
 ];
+// Weekends (Sat–Sun): 11:00 AM – 11:00 PM (last slot 10:00 PM for 1hr min)
 const WEEKEND_SLOTS = [
-  '10:00', '11:00', '12:00', '13:00', '14:00', '15:00',
-  '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00',
+  '11:00', '11:30', '12:00', '12:30', '13:00', '13:30',
+  '14:00', '14:30', '15:00', '15:30', '16:00', '16:30',
+  '17:00', '17:30', '18:00', '18:30', '19:00', '19:30',
+  '20:00', '20:30', '21:00', '21:30', '22:00',
 ];
 
 export function getTimeSlotsForDate(dateStr: string): string[] {
@@ -38,10 +40,17 @@ export const BOOKING_STATUSES = {
 
 export function addHours(time: string, hours: number): string {
   const [h, m] = time.split(':').map(Number);
-  const newH = h + hours;
-  if (newH > 24) return '00:00'; // hard overflow
-  if (newH === 24) return '24:00'; // midnight closing
-  return `${String(newH).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+  const totalMins = h * 60 + m + Math.round(hours * 60);
+  const newH = Math.floor(totalMins / 60);
+  const newM = totalMins % 60;
+  if (newH > 24) return '00:00';
+  if (newH === 24 && newM === 0) return '24:00';
+  return `${String(newH).padStart(2, '0')}:${String(newM).padStart(2, '0')}`;
+}
+
+function toMins(time: string): number {
+  const [h, m] = time.split(':').map(Number);
+  return h * 60 + m;
 }
 
 export function formatTime(time: string): string {
@@ -92,15 +101,14 @@ export function isSlotAvailable(
   bookedSlots: Array<{ startTime: string; endTime: string; status: string }>
 ): boolean {
   const endTime = addHours(startTime, duration);
-  const [startH] = startTime.split(':').map(Number);
-  const [endH] = endTime.split(':').map(Number);
+  const startMins = toMins(startTime);
+  const endMins = toMins(endTime);
 
   for (const booked of bookedSlots) {
     if (booked.status === 'CANCELLED') continue;
-    const [bookedStartH] = booked.startTime.split(':').map(Number);
-    const [bookedEndH] = booked.endTime.split(':').map(Number);
-    // Check overlap
-    if (startH < bookedEndH && endH > bookedStartH) {
+    const bookedStartMins = toMins(booked.startTime);
+    const bookedEndMins = toMins(booked.endTime);
+    if (startMins < bookedEndMins && endMins > bookedStartMins) {
       return false;
     }
   }

@@ -463,25 +463,26 @@ export default function BookPageInner() {
                 </div>
                 <div className="time-slots-grid">
                   {getTimeSlotsForDate(selectedDate).map((time) => {
-                    const slotHour = parseInt(time.split(':')[0]);
-                    const endH = slotHour + selectedDuration;
-                    // Hide slots where booking would run past closing time
-                    if (endH > CLOSING_HOUR) return null;
+                    const [slotH, slotM] = time.split(':').map(Number);
+                    const slotStartMinsVal = slotH * 60 + slotM;
+                    const slotEndMinsVal = slotStartMinsVal + Math.round(selectedDuration * 60);
+                    // Hide slots where booking would run past closing time (11 PM = 1380 mins)
+                    if (slotEndMinsVal > CLOSING_HOUR * 60) return null;
 
                     // Block past slots — allow up to 15 min after slot start
                     const now = new Date();
                     const isToday = selectedDate === getTodayString();
-                    const slotStartMins = slotHour * 60;
                     const nowMins = now.getHours() * 60 + now.getMinutes();
-                    const isPast = isToday && nowMins > slotStartMins + 15;
+                    const isPast = isToday && nowMins > slotStartMinsVal + 15;
 
                     // Detect frozen (BLOCKED) vs normal booked overlap
-                    const slotEndH = slotHour + selectedDuration;
                     const isFrozen = bookedSlots.some((b) => {
                       if (b.status !== 'BLOCKED') return false;
-                      const [bStart] = b.startTime.split(':').map(Number);
-                      const [bEnd] = b.endTime.split(':').map(Number);
-                      return slotHour < bEnd && slotEndH > bStart;
+                      const [bSH, bSM] = b.startTime.split(':').map(Number);
+                      const [bEH, bEM] = b.endTime.split(':').map(Number);
+                      const bStartM = bSH * 60 + bSM;
+                      const bEndM = bEH * 60 + bEM;
+                      return slotStartMinsVal < bEndM && slotEndMinsVal > bStartM;
                     });
                     const booked = !isFrozen && !isSlotAvailable(time, selectedDuration, bookedSlots);
                     const unavailable = isPast || isFrozen || booked;

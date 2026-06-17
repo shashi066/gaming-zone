@@ -78,14 +78,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Station not found or inactive' }, { status: 404 });
     }
 
-    // Reject bookings for past time slots on today's date
+    // Reject bookings only if slot start is more than 15 mins in the past
     const today = new Date();
     const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
     if (date === todayStr) {
       const [slotHour, slotMin] = startTime.split(':').map(Number);
       const slotTotalMins = slotHour * 60 + slotMin;
       const nowTotalMins = today.getHours() * 60 + today.getMinutes();
-      if (slotTotalMins <= nowTotalMins) {
+      if (slotTotalMins + 15 <= nowTotalMins) {
         return NextResponse.json(
           { error: 'Cannot book a time slot that has already passed.' },
           { status: 400 }
@@ -98,13 +98,14 @@ export async function POST(req: NextRequest) {
       where: { stationId, date, status: { not: 'CANCELLED' } },
     });
 
-    const [startH] = startTime.split(':').map(Number);
-    const [endH]   = endTime.split(':').map(Number);
+    const toMins = (t: string) => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+    const startMins = toMins(startTime);
+    const endMins   = toMins(endTime);
 
     for (const existing of conflictingBookings) {
-      const [existStartH] = existing.startTime.split(':').map(Number);
-      const [existEndH]   = existing.endTime.split(':').map(Number);
-      if (startH < existEndH && endH > existStartH) {
+      const exStartMins = toMins(existing.startTime);
+      const exEndMins   = toMins(existing.endTime);
+      if (startMins < exEndMins && endMins > exStartMins) {
         return NextResponse.json(
           { error: 'This time slot is already booked. Please choose a different time.' },
           { status: 409 }

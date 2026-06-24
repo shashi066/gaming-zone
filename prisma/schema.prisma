@@ -23,6 +23,8 @@ model User {
   bookings      Booking[]
   passes        UserPass[]
   dailySpins    UserDailySpin[]
+  drawEntries   DrawEntry[]
+  wonDraws      LuckyDraw[] @relation("DrawWinner")
 
   @@map("users")
 }
@@ -116,23 +118,55 @@ model LootItem {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  spins       UserDailySpin[]
+  spins UserDailySpin[]
 
   @@map("loot_items")
 }
 
 model UserDailySpin {
-  id          String   @id @default(cuid())
-  userId      String
-  lootItemId  String?
-  spinDate    String   // YYYY-MM-DD in IST
-  attempts    Int      @default(1)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String   @id @default(cuid())
+  userId     String
+  lootItemId String?
+  spinDate   String   // YYYY-MM-DD in IST
+  attempts   Int      @default(1)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  lootItem    LootItem? @relation(fields: [lootItemId], references: [id], onDelete: SetNull)
+  user     User      @relation(fields: [userId],     references: [id], onDelete: Cascade)
+  lootItem LootItem? @relation(fields: [lootItemId], references: [id], onDelete: SetNull)
 
   @@unique([userId, spinDate])
   @@map("user_daily_spins")
+}
+
+model LuckyDraw {
+  id             String    @id @default(cuid())
+  title          String
+  description    String?
+  prize          String
+  status         String    @default("DRAFT")
+  startsAt       DateTime?
+  endsAt         DateTime?
+  winnerId       String?
+  winnerPickedAt DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  entries DrawEntry[]
+  winner  User?       @relation("DrawWinner", fields: [winnerId], references: [id], onDelete: SetNull)
+
+  @@map("lucky_draws")
+}
+
+model DrawEntry {
+  id        String   @id @default(cuid())
+  drawId    String
+  userId    String
+  createdAt DateTime @default(now())
+
+  draw LuckyDraw @relation(fields: [drawId], references: [id], onDelete: Cascade)
+  user User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([drawId, userId])
+  @@map("draw_entries")
 }

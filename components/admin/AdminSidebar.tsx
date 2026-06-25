@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, BookOpen, Monitor, Users,
-  Gamepad2, ChevronRight, UserPlus, Settings, Award, Gift,
+  Gamepad2, ChevronRight, UserPlus, Settings, Award, Gift, RotateCw,
 } from 'lucide-react';
 
 const NAV_ITEMS = [
@@ -14,6 +14,10 @@ const NAV_ITEMS = [
   { href: '/admin/passes',   label: 'Passes',         icon: Award },
   { href: '/admin/draws',    label: 'Lucky Draw',     icon: Gift },
   { href: '/admin/stations', label: 'Stations',       icon: Monitor },
+<<<<<<< Updated upstream
+=======
+  { href: '/admin/daily-spin',label: 'Daily Spin',    icon: RotateCw },
+>>>>>>> Stashed changes
   { href: '/admin/users',    label: 'Users',          icon: Users },
   { href: '/admin/settings', label: 'Settings',       icon: Settings },
 ];

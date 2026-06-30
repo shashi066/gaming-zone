@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
 import { bookingSchema } from '@/lib/validations';
 import { addHours } from '@/lib/utils';
+import { notifyAdminNewBooking } from '@/lib/notify';
 
 export async function GET(req: NextRequest) {
   const session = await auth();
@@ -199,6 +200,24 @@ export async function POST(req: NextRequest) {
         station: true,
         user: { select: { name: true, email: true } },
       },
+    });
+
+    // Fire-and-forget admin notification — never blocks the booking response
+    notifyAdminNewBooking({
+      bookingId:        booking.id,
+      customerName:     booking.customerName ?? booking.user?.name ?? 'Unknown',
+      customerEmail:    booking.user?.email ?? null,
+      customerPhone:    booking.customerPhone ?? null,
+      stationName:      booking.station.name,
+      date:             booking.date,
+      startTime:        booking.startTime,
+      endTime:          booking.endTime,
+      duration:         booking.duration,
+      totalPrice:       booking.totalPrice,
+      discount:         0,
+      bookingType:      booking.bookingType,
+      extraControllers: booking.extraControllers,
+      notes:            booking.notes,
     });
 
     return NextResponse.json({ booking }, { status: 201 });

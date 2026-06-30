@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
 import { addHours } from '@/lib/utils';
+import { notifyAdminNewBooking } from '@/lib/notify';
 import { z } from 'zod';
 
 const walkinSchema = z.object({
@@ -172,6 +173,24 @@ export async function POST(req: NextRequest) {
       include: {
         station: { select: { id: true, name: true } },
       },
+    });
+
+    // Fire-and-forget admin notification
+    notifyAdminNewBooking({
+      bookingId:        booking.id,
+      customerName:     booking.customerName ?? 'Walk-in',
+      customerEmail:    null,
+      customerPhone:    booking.customerPhone ?? null,
+      stationName:      booking.station.name,
+      date:             booking.date,
+      startTime:        booking.startTime,
+      endTime:          booking.endTime,
+      duration:         booking.duration,
+      totalPrice:       booking.totalPrice,
+      discount,
+      bookingType:      'OFFLINE',
+      extraControllers: booking.extraControllers,
+      notes:            booking.notes,
     });
 
     return NextResponse.json({ booking }, { status: 201 });

@@ -59,6 +59,8 @@ export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+  const isAdmin = session.user.role === 'ADMIN';
+
   try {
     const body = await req.json();
     const result = bookingSchema.safeParse(body);
@@ -84,18 +86,20 @@ export async function POST(req: NextRequest) {
     // Server-side guard: ignore controller add-ons for stations that don't support them
     const safeExtraControllers = station.hasControllers ? extraControllers : 0;
 
-    // Reject bookings only if slot start is more than 15 mins in the past
-    const today = new Date();
-    const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
-    if (date === todayStr) {
-      const [slotHour, slotMin] = startTime.split(':').map(Number);
-      const slotTotalMins = slotHour * 60 + slotMin;
-      const nowTotalMins = today.getHours() * 60 + today.getMinutes();
-      if (slotTotalMins + 15 <= nowTotalMins) {
-        return NextResponse.json(
-          { error: 'Cannot book a time slot that has already passed.' },
-          { status: 400 }
-        );
+    // Reject bookings only if slot start is more than 15 mins in the past (skip for admins)
+    if (!isAdmin) {
+      const today = new Date();
+      const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+      if (date === todayStr) {
+        const [slotHour, slotMin] = startTime.split(':').map(Number);
+        const slotTotalMins = slotHour * 60 + slotMin;
+        const nowTotalMins = today.getHours() * 60 + today.getMinutes();
+        if (slotTotalMins + 15 <= nowTotalMins) {
+          return NextResponse.json(
+            { error: 'Cannot book a time slot that has already passed.' },
+            { status: 400 }
+          );
+        }
       }
     }
 
@@ -168,6 +172,7 @@ export async function POST(req: NextRequest) {
     }
 
     const totalPrice = sessionPrice + controllerCharge;
+    // discount is always 0 for regular users — admin-only feature
 
     const booking = await prisma.booking.create({
       data: {
@@ -178,6 +183,7 @@ export async function POST(req: NextRequest) {
         endTime,
         duration,
         totalPrice,
+        discount:         0,
         notes:            notes ?? null,
         status:           'CONFIRMED',
         bookingType:      'ONLINE',

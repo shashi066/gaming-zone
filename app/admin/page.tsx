@@ -124,6 +124,7 @@ export default async function AdminDashboard() {
           <p className="page-subtitle">
             {new Date().toLocaleDateString('en-IN', {
               weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+              timeZone: 'Asia/Kolkata',
             })}
           </p>
         </div>

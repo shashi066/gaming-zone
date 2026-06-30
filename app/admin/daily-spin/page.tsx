@@ -1,8 +1,6 @@
 import { AdminDailySpin } from '@/components/admin/AdminDailySpin';
 
-export const metadata = {
-  title: 'Daily Spin Admin',
-};
+export const metadata = { title: 'Daily Guild Vault Admin' };
 
 export default function AdminDailySpinPage() {
   return <AdminDailySpin />;

@@ -256,6 +256,7 @@ export default function BookPageInner() {
                         weekday: 'short',
                         month: 'short',
                         day: 'numeric',
+                        timeZone: 'Asia/Kolkata',
                       });
                 return (
                   <button
@@ -469,7 +470,7 @@ export default function BookPageInner() {
                   Available Start Times
                 </div>
                 <div className="time-slots-grid">
-                  {getTimeSlotsForDate(selectedDate, selectedStation?.minDuration === 0.5 ? 30 : 60).map((time) => {
+                  {getTimeSlotsForDate(selectedDate, 30).map((time) => {
                     const [slotH, slotM] = time.split(':').map(Number);
                     const slotStartMinsVal = slotH * 60 + slotM;
                     const slotEndMinsVal = slotStartMinsVal + Math.round(selectedDuration * 60);

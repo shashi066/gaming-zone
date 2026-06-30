@@ -357,6 +357,7 @@ export default function AdminUsersPage() {
                       <Calendar size={13} />
                       {new Date(user.createdAt).toLocaleDateString('en-IN', {
                         year: 'numeric', month: 'short', day: 'numeric',
+                        timeZone: 'Asia/Kolkata',
                       })}
                     </div>
                   </td>

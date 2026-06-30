@@ -66,6 +66,7 @@ model Booking {
   razorpayPaymentId String?
   extraControllers  Int      @default(0)
   controllerCharge  Float    @default(0)
+  discount          Int      @default(0)
   notes             String?
   adminComment      String?
   userPassId        String?

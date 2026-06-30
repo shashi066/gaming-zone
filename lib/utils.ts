@@ -29,7 +29,7 @@ const WEEKEND_SLOTS_30 = [
   '20:00','20:30','21:00','21:30','22:00','22:30',
 ];
 
-export function getTimeSlotsForDate(dateStr: string, stepMins: 30 | 60 = 60): string[] {
+export function getTimeSlotsForDate(dateStr: string, stepMins: 30 | 60 = 30): string[] {
   const date = new Date(dateStr + 'T00:00:00');
   const day = date.getDay(); // 0 = Sun, 6 = Sat
   const isWeekend = day === 0 || day === 6;
@@ -98,6 +98,7 @@ export function formatDate(dateStr: string): string {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
+    timeZone: 'Asia/Kolkata',
   });
 }
 
@@ -110,19 +111,22 @@ export function formatCurrency(amount: number): string {
 }
 
 export function getTodayString(): string {
-  const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+  }).formatToParts(new Date());
+  const get = (t: string) => parts.find(p => p.type === t)!.value;
+  return `${get('year')}-${get('month')}-${get('day')}`;
 }
 
-/** Formats a Date object to a YYYY-MM-DD string using LOCAL date (not UTC). */
+/** Formats a Date object to a YYYY-MM-DD string in IST. */
 export function toLocalDateString(d: Date): string {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+  }).formatToParts(d);
+  const get = (t: string) => parts.find(p => p.type === t)!.value;
+  return `${get('year')}-${get('month')}-${get('day')}`;
 }
 
 export function isSlotAvailable(

@@ -70,7 +70,7 @@ export default async function ProfilePage() {
             <div className="booking-detail-item">
               <div className="booking-detail-label"><Calendar size={12} style={{ display: 'inline', marginRight: 4 }} />Member Since</div>
               <div className="booking-detail-value" style={{ fontSize: '0.875rem' }}>
-                {new Date(user.createdAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })}
+                {new Date(user.createdAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Asia/Kolkata' })}
               </div>
             </div>
             <div className="booking-detail-item">

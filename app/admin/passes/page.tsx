@@ -340,7 +340,7 @@ export default function AdminPassesPage() {
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                           <span style={{ fontWeight: 700, color, fontSize: '0.85rem' }}>{p.passType} PASS</span>
                           <span style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
-                            <Calendar size={11} /> Expires {new Date(p.expiresAt).toLocaleDateString('en-IN')}
+                            <Calendar size={11} /> Expires {new Date(p.expiresAt).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}
                           </span>
                         </div>
                         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>

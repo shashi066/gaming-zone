@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
 import { updateBookingSchema } from '@/lib/validations';
+import { addHours } from '@/lib/utils';
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
@@ -94,16 +95,16 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   if (!booking) return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
 
   const body = await req.json();
-  const { date, stationId, startTime, duration, notes, customerName, customerPhone, extraControllers } = body;
+  const { date, stationId, startTime, duration, notes, customerName, customerPhone, extraControllers, discount: rawDiscount } = body;
+  // discount is admin-only; this route is already admin-guarded above
+  const discount: number = Math.min(100, Math.max(0, parseInt(String(rawDiscount ?? 0)) || 0));
 
   if (!date || !stationId || !startTime || !duration) {
     return NextResponse.json({ error: 'date, stationId, startTime and duration are required' }, { status: 400 });
   }
 
-  // Recalculate endTime
-  const [h] = startTime.split(':').map(Number);
-  const endHour = h + Number(duration);
-  const endTime = `${String(endHour).padStart(2, '0')}:00`;
+  // Recalculate endTime using addHours to correctly handle 30-min durations
+  const endTime = addHours(startTime, Number(duration));
 
   const station = await prisma.station.findUnique({ where: { id: stationId } });
   if (!station) return NextResponse.json({ error: 'Station not found' }, { status: 404 });
@@ -118,7 +119,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
   const sessionCost      = station.hourlyRate * Number(duration);
   const controllerCharge = numControllers * controllerUnitPrice * Number(duration);
-  const totalPrice       = sessionCost + controllerCharge;
+  const totalPrice       = Math.round((sessionCost + controllerCharge) * (1 - discount / 100));
 
   const updated = await prisma.booking.update({
     where: { id },
@@ -130,6 +131,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       duration:         Number(duration),
       extraControllers: numControllers,
       controllerCharge,
+      discount,
       totalPrice,
       notes:         notes         ?? booking.notes,
       customerName:  customerName  ?? booking.customerName,

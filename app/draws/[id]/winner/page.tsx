@@ -60,7 +60,7 @@ export default async function WinnerPage({ params, searchParams }: Props) {
               marginBottom: 'var(--space-xs)',
             }}
           >
-            Winner — {draw.winnerPickedAt ? new Date(draw.winnerPickedAt).toLocaleDateString('en-IN', { dateStyle: 'long' }) : ''}
+            Winner — {draw.winnerPickedAt ? new Date(draw.winnerPickedAt).toLocaleDateString('en-IN', { dateStyle: 'long', timeZone: 'Asia/Kolkata' }) : ''}
           </div>
           <h2
             className="font-orbitron"

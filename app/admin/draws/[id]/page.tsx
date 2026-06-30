@@ -92,7 +92,7 @@ export default async function AdminDrawDetailPage({ params }: { params: Promise<
                   <td style={{ fontSize: '0.85rem' }}>{entry.user.email}</td>
                   <td style={{ fontSize: '0.85rem' }}>{entry.user.phone ?? '—'}</td>
                   <td style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>
-                    {new Date(entry.createdAt).toLocaleString('en-IN')}
+                    {new Date(entry.createdAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}
                   </td>
                 </tr>
               ))}

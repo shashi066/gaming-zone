@@ -80,7 +80,7 @@ export default async function DrawWinnersPage() {
                   <div style={{ textAlign: 'right', minWidth: 90 }}>
                     <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
                       {draw.winnerPickedAt
-                        ? new Date(draw.winnerPickedAt).toLocaleDateString('en-IN')
+                        ? new Date(draw.winnerPickedAt).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })
                         : '—'}
                     </div>
                     <span className="badge" style={{ marginTop: 4 }}>View →</span>

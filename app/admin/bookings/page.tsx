@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import {
   formatCurrency, formatDate, formatTime,
-  getTimeSlotsForDate, CLOSING_HOUR, getTodayString,
+  getTimeSlotsForDate, CLOSING_HOUR, getTodayString, isSlotAvailable,
 } from '@/lib/utils';
 
 type Station = { id: string; name: string; hourlyRate: number };
@@ -30,6 +30,7 @@ type Booking = {
   stationId: string;
   extraControllers: number;
   controllerCharge: number;
+  discount: number;
   user: { id: string; name: string; email: string } | null;
   station: { id: string; name: string };
   createdAt: string;
@@ -70,15 +71,16 @@ function EditModal({
   const [startTime, setStartTime]         = useState(booking.startTime);
   const [duration, setDuration]           = useState(booking.duration);
   const [extraControllers, setExtra]      = useState(booking.extraControllers);
+  const [discount, setDiscount]           = useState(booking.discount ?? 0);
   const [notes, setNotes]                 = useState(booking.notes ?? '');
   const [customerName, setCustomerName]   = useState(booking.customerName ?? '');
   const [customerPhone, setCustomerPhone] = useState(booking.customerPhone ?? '');
   const [controllerUnitPrice, setCtrlPrice] = useState(0);
-  const [loading, setLoading]             = useState(false);
-  const [error, setError]                 = useState('');
+  const [bookedSlots, setBookedSlots]       = useState<{ startTime: string; endTime: string; status: string }[]>([]);
+  const [loading, setLoading]               = useState(false);
+  const [error, setError]                   = useState('');
 
   const isOffline = booking.bookingType === 'OFFLINE';
-  const today     = getTodayString();
 
   // Fetch controller unit price from settings
   useEffect(() => {
@@ -87,22 +89,32 @@ function EditModal({
       .then((d) => setCtrlPrice(parseFloat(d.controller_price ?? '0')));
   }, []);
 
+  // Fetch booked slots whenever station or date changes
+  useEffect(() => {
+    if (!stationId || !date) return;
+    fetch(`/api/slots?stationId=${stationId}&date=${date}`)
+      .then((r) => r.json())
+      .then((data) => {
+        // Exclude the current booking's own slot so it doesn't block itself
+        const others = (data.bookings ?? []).filter(
+          (b: { startTime: string }) => b.startTime !== booking.startTime || date !== booking.date || stationId !== booking.stationId
+        );
+        setBookedSlots(others);
+      })
+      .catch(() => setBookedSlots([]));
+  }, [stationId, date]);
+
   const selectedStation  = stations.find((s) => s.id === stationId);
   const sessionCost      = (selectedStation?.hourlyRate ?? 0) * duration;
   const controllerCharge = extraControllers * controllerUnitPrice * duration;
-  const totalPrice       = sessionCost + controllerCharge;
+  const priceBeforeDiscount = sessionCost + controllerCharge;
+  const totalPrice       = Math.round(priceBeforeDiscount * (1 - discount / 100));
 
-  // Time slots — filter past times if date is today (with 15-min grace)
+  // Time slots — no past-time restriction for admin, but hide already-booked slots
   const availableSlots = getTimeSlotsForDate(date).filter((t) => {
     const slotH = parseInt(t.split(':')[0]);
     if (slotH + duration > CLOSING_HOUR) return false;
-    if (date === today) {
-      const now = new Date();
-      const slotMins = slotH * 60;
-      const nowMins  = now.getHours() * 60 + now.getMinutes();
-      return nowMins <= slotMins + 15;
-    }
-    return true;
+    return isSlotAvailable(t, duration, bookedSlots);
   });
 
   // If currently selected startTime is no longer valid after date change, reset
@@ -117,7 +129,7 @@ function EditModal({
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({
           date, stationId, startTime: startTimeValid ? startTime : availableSlots[0],
-          duration, extraControllers, notes, customerName, customerPhone,
+          duration, extraControllers, discount, notes, customerName, customerPhone,
         }),
       });
       const data = await res.json();
@@ -154,14 +166,13 @@ function EditModal({
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-lg)' }}>
 
-          {/* Date — min = today to disable past dates */}
+          {/* Date */}
           <div className="form-group">
             <label className="form-label">Date</label>
             <input
               type="date"
               className="form-input"
               value={date}
-              min={today}
               onChange={(e) => setDate(e.target.value)}
             />
           </div>
@@ -193,9 +204,6 @@ function EditModal({
                   ))
                 )}
               </select>
-              {date === today && (
-                <p className="form-helper" style={{ marginTop: 4 }}>Showing available slots only</p>
-              )}
             </div>
             <div className="form-group">
               <label className="form-label">Duration</label>
@@ -265,7 +273,31 @@ function EditModal({
             )}
             <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, borderTop: '1px solid rgba(108,99,255,0.15)', paddingTop: 6, color: 'var(--color-accent-primary)' }}>
               <span>Total</span>
-              <span>₹{totalPrice}</span>
+              <span>
+                {discount > 0 && (
+                  <s style={{ fontSize: '0.8rem', fontWeight: 400, opacity: 0.5, marginRight: 6 }}>₹{priceBeforeDiscount}</s>
+                )}
+                ₹{totalPrice}
+              </span>
+            </div>
+          </div>
+
+          {/* Discount */}
+          <div className="form-group">
+            <label className="form-label">Discount <span style={{ color: 'var(--color-text-muted)', textTransform: 'none', letterSpacing: 0 }}>(optional, 10–100%)</span></label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <input
+                type="range"
+                min={0}
+                max={100}
+                step={5}
+                value={discount}
+                onChange={(e) => setDiscount(Number(e.target.value))}
+                style={{ flex: 1, accentColor: 'var(--color-accent-secondary)' }}
+              />
+              <span style={{ minWidth: 44, textAlign: 'right', fontWeight: 700, color: discount > 0 ? 'var(--color-accent-secondary)' : 'var(--color-text-muted)', fontFamily: 'Orbitron, sans-serif', fontSize: '0.9rem' }}>
+                {discount}%
+              </span>
             </div>
           </div>
 
@@ -493,7 +525,7 @@ export default function AdminBookingsPage() {
                         #{b.id.slice(-8).toUpperCase()}
                       </span>
                       <div style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)', marginTop: 2 }}>
-                        {new Date(b.createdAt).toLocaleDateString('en-IN')}
+                        {new Date(b.createdAt).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}
                       </div>
                       {b.notes && (
                         <div style={{ marginTop: 5, display: 'flex', alignItems: 'flex-start', gap: 4, fontSize: '0.72rem', color: '#00d4ff', fontStyle: 'italic', maxWidth: 180 }}>

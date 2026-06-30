@@ -276,7 +276,7 @@ export default function MyBookingsPage() {
                         <div style={{ fontSize: '2.5rem', marginBottom: 6 }}>{icon}</div>
                         <div style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--color-text-primary)' }}>{activePass.passType.charAt(0) + activePass.passType.slice(1).toLowerCase()} Pass</div>
                         <div style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)', marginTop: 2 }}>
-                          Purchased {new Date(activePass.purchasedAt).toLocaleDateString('en-IN')} · ₹{activePass.price.toLocaleString('en-IN')}
+                          Purchased {new Date(activePass.purchasedAt).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })} · ₹{activePass.price.toLocaleString('en-IN')}
                         </div>
                       </div>
                       <div style={{ textAlign: 'right' }}>
@@ -285,7 +285,7 @@ export default function MyBookingsPage() {
                           {activePass.status}
                         </div>
                         <div style={{ marginTop: 6, fontSize: '0.78rem', color: 'var(--color-text-muted)' }}>
-                          Expires {expires.toLocaleDateString('en-IN')}
+                          Expires {expires.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}
                           {daysLeft <= 7 && <span style={{ color: '#f59e0b', marginLeft: 4 }}>({daysLeft} days left)</span>}
                         </div>
                       </div>

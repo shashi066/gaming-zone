@@ -115,6 +115,7 @@ export default async function DrawsPage() {
                     {new Date(draw.endsAt).toLocaleString('en-IN', {
                       dateStyle: 'long',
                       timeStyle: 'short',
+                      timeZone: 'Asia/Kolkata',
                     })}
                   </p>
                 )}

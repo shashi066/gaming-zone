@@ -117,12 +117,15 @@ export async function GET() {
       }
     }
 
+    const items = await prisma.lootItem.findMany({ where: { enabled: true } });
+
     return NextResponse.json({
       enabled: true,
       canSpin,
       spin,
       remainingRetries,
       nextReset: nextReset.toISOString(),
+      lootItems: items,
     });
 
   } catch (error) {

@@ -1,8 +1,8 @@
 import { DailySpinWidget } from '@/components/DailySpinWidget';
 
 export const metadata = {
-  title: 'Daily Loot Spin',
-  description: 'Spin for your daily rewards at GameZone Cafe!',
+  title: 'Daily Guild Vault',
+  description: 'Open the vault for your daily rewards at GameZone Cafe!',
 };
 
 export default function DailySpinPage() {

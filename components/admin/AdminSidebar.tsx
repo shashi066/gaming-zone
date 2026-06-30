@@ -12,9 +12,9 @@ const NAV_ITEMS = [
   { href: '/admin/bookings', label: 'All Bookings',   icon: BookOpen },
   { href: '/admin/walkin',   label: 'Walk-in Booking', icon: UserPlus },
   { href: '/admin/passes',   label: 'Passes',         icon: Award },
-  { href: '/admin/draws',    label: 'Lucky Draw',     icon: Gift },
+  { href: '/admin/draws',    label: 'Guild Drop',     icon: Gift },
   { href: '/admin/stations', label: 'Stations',       icon: Monitor },
-  { href: '/admin/daily-spin', label: 'Daily Spin', icon: RotateCw },
+  { href: '/admin/daily-spin', label: 'Guild Vault', icon: RotateCw },
   { href: '/admin/users',    label: 'Users',          icon: Users },
   { href: '/admin/settings', label: 'Settings',       icon: Settings },
 ];

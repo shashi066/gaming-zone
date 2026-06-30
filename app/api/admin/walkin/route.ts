@@ -98,6 +98,7 @@ export async function POST(req: NextRequest) {
     }
 
     const { usePass, linkedUserId } = result.data;
+  const discount: number = Math.min(100, Math.max(0, parseInt(String(body.discount ?? 0)) || 0));
 
     // Fetch controller price from settings
     let controllerUnitPrice = 0;
@@ -145,7 +146,7 @@ export async function POST(req: NextRequest) {
       sessionPrice      = 0;
     }
 
-    const totalPrice = sessionPrice + controllerCharge;
+    const totalPrice = Math.round((sessionPrice + controllerCharge) * (1 - discount / 100));
 
     const booking = await prisma.booking.create({
       data: {
@@ -163,6 +164,7 @@ export async function POST(req: NextRequest) {
         paymentStatus:    usePass ? 'PAID' : 'UNPAID',
         extraControllers: safeExtraControllers,
         controllerCharge,
+        discount,
         notes:            notes ?? null,
         userPassId,
         passHoursDeducted,

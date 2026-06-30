@@ -57,6 +57,7 @@ export default function WalkinBookingPage() {
     startTime: '10:00',
     duration: 2,
     extraControllers: 0,
+    discount: 0,
     notes: '',
   });
 
@@ -124,7 +125,8 @@ export default function WalkinBookingPage() {
   const selectedStation = stations.find((s) => s.id === form.stationId);
   const controllerCharge = form.extraControllers * controllerPrice * form.duration;
   const sessionCost = selectedStation ? selectedStation.hourlyRate * form.duration : 0;
-  const estimatedTotal = (usePass ? 0 : sessionCost) + controllerCharge;
+  const priceBeforeDiscount = (usePass ? 0 : sessionCost) + controllerCharge;
+  const estimatedTotal = Math.round(priceBeforeDiscount * (1 - form.discount / 100));
 
   // Filtered user list for dropdown
   const filteredUsers = userQuery.trim().length < 1 ? [] : allUsers.filter((u) => {
@@ -169,7 +171,7 @@ export default function WalkinBookingPage() {
 
   // Reset user/pass state when form is reset
   const resetForm = () => {
-    setForm({ customerName: '', customerPhone: '', stationId: '', date: getTodayString(), startTime: '10:00', duration: 2, extraControllers: 0, notes: '' });
+    setForm({ customerName: '', customerPhone: '', stationId: '', date: getTodayString(), startTime: '10:00', duration: 2, extraControllers: 0, discount: 0, notes: '' });
     setSelectedUser(null);
     setActivePass(null);
     setUsePass(false);
@@ -177,18 +179,11 @@ export default function WalkinBookingPage() {
   };
 
   const SHOP_CLOSE_MINS = 23 * 60;
-  const stationMinDuration = selectedStation?.minDuration ?? 1;
-  const slotStep: 30 | 60 = stationMinDuration <= 0.5 ? 30 : 60;
-  const availableSlots = getTimeSlotsForDate(form.date, slotStep).filter((time) => {
+  const availableSlots = getTimeSlotsForDate(form.date, 30).filter((time) => {
     const [h, m] = time.split(':').map(Number);
     const slotStartMins = h * 60 + m;
     const slotEndMins = slotStartMins + Math.round(form.duration * 60);
     if (slotEndMins > SHOP_CLOSE_MINS) return false;
-    if (form.date === getTodayString()) {
-      const now = new Date();
-      const nowMins = now.getHours() * 60 + now.getMinutes();
-      if (nowMins >= slotStartMins) return false;
-    }
     return isSlotAvailable(time, form.duration, bookedSlots);
   });
 
@@ -654,7 +649,6 @@ export default function WalkinBookingPage() {
                         type="date"
                         className="form-input"
                         value={form.date}
-                        min={today}
                         onChange={(e) => setForm({ ...form, date: e.target.value })}
                         required
                       />
@@ -723,6 +717,27 @@ export default function WalkinBookingPage() {
                   )}
 
                   <div className="form-group">
+                    <label className="form-label" htmlFor="walkin-discount">
+                      Discount <span style={{ color: 'var(--color-text-muted)', textTransform: 'none', letterSpacing: 0 }}>(optional, 10–100%)</span>
+                    </label>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <input
+                        id="walkin-discount"
+                        type="range"
+                        min={0}
+                        max={100}
+                        step={5}
+                        value={form.discount}
+                        onChange={(e) => setForm({ ...form, discount: Number(e.target.value) })}
+                        style={{ flex: 1, accentColor: 'var(--color-accent-secondary)' }}
+                      />
+                      <span style={{ minWidth: 44, textAlign: 'right', fontWeight: 700, color: form.discount > 0 ? 'var(--color-accent-secondary)' : 'var(--color-text-muted)', fontFamily: 'Orbitron, sans-serif', fontSize: '0.9rem' }}>
+                        {form.discount}%
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="form-group">
                     <label className="form-label" htmlFor="walkin-notes">
                       Notes <span style={{ color: 'var(--color-text-muted)', textTransform: 'none', letterSpacing: 0 }}>(optional)</span>
                     </label>
@@ -776,7 +791,7 @@ export default function WalkinBookingPage() {
                   {usePass && (
                     <div style={{ fontSize: '0.78rem', color: 'var(--color-text-secondary)', display: 'flex', gap: 16 }}>
                       <span>✅ Session cost: <s style={{ opacity: 0.5 }}>{selectedStation ? `₹${(selectedStation.hourlyRate * form.duration).toLocaleString('en-IN')}` : '—'}</s> <strong style={{ color: 'var(--color-accent-success)' }}>₹0</strong></span>
-                      <span style={{ color: 'var(--color-text-muted)' }}>Expires: {new Date(activePass.expiresAt).toLocaleDateString('en-IN')}</span>
+                      <span style={{ color: 'var(--color-text-muted)' }}>Expires: {new Date(activePass.expiresAt).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}</span>
                     </div>
                   )}
                 </div>
@@ -811,7 +826,17 @@ export default function WalkinBookingPage() {
                     {form.extraControllers > 0 && ` · +${form.extraControllers} controller${form.extraControllers > 1 ? 's' : ''}`}
                   </div>
                   <div style={{ color: usePass ? 'var(--color-accent-success)' : 'var(--color-accent-primary)', fontWeight: 700, fontFamily: 'Orbitron, sans-serif' }}>
-                    Total: {estimatedTotal === 0 ? <span>₹0 <span style={{ fontSize: '0.75rem', fontWeight: 400 }}>(pass used)</span></span> : `${formatCurrency(estimatedTotal)} — Pay at counter`}
+                    {estimatedTotal === 0 && usePass
+                      ? <span>₹0 <span style={{ fontSize: '0.75rem', fontWeight: 400 }}>(pass used)</span></span>
+                      : <>
+                          {form.discount > 0 && (
+                            <span style={{ fontWeight: 400, fontSize: '0.82rem', color: 'var(--color-text-muted)', marginRight: 8 }}>
+                              <s>{formatCurrency(priceBeforeDiscount)}</s> −{form.discount}%
+                            </span>
+                          )}
+                          {formatCurrency(estimatedTotal)} — Pay at counter
+                        </>
+                    }
                   </div>
                 </div>
               )}
